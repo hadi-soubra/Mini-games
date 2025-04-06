@@ -1,0 +1,145 @@
+/* ===== Reset & Base ===== */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Roboto', sans-serif;
+    background-color: #121212;
+    color: #fff;
+  }
+  
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* ===== Navigation Bar ===== */
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    padding: 10px 20px;
+    flex-shrink: 0; /* keeps the navbar height fixed */
+  }
+  
+  .navbar-left a {
+    color: #ffcc00;
+    font-size: 24px;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
+  .navbar-right a {
+    color: white;
+    font-size: 24px;
+    text-decoration: none;
+  }
+  
+  /* ===== Main Container (Sidebar + Game) ===== */
+  .container {
+    display: flex;
+    flex: 1;           /* fill remaining vertical space */
+    gap: 10px;         /* less gap between sidebar & game */
+    padding: 15px;     /* slightly reduced padding around edges */
+    min-height: 0;     /* prevents overflow on flex children */
+  }
+  
+  /* ===== Sidebar (Score, Leaderboard) ===== */
+  .sidebar {
+    width: 200px;           /* narrower sidebar */
+    background: #222;
+    padding: 15px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    border: 3px solid #ffcc00;  /* border around the sidebar */
+    border-radius: 10px;
+  }
+  
+  .sidebar h2 {
+    color: #ffcc00;
+    margin-bottom: 10px;
+  }
+  
+  .sidebar p {
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+  }
+  
+  /* Leaderboard Styles */
+  .leaderboard ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .leaderboard li {
+    background: #333;
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 5px;
+  }
+  
+  /* ===== Game Area ===== */
+  .game-area {
+    flex: 1;             /* fill the rest of the width */
+    position: relative;
+    overflow: hidden;
+    border: 3px solid #ffcc00;  /* border around the game canvas */
+    border-radius: 10px;
+  }
+  
+  /* Canvas Fills the Game Area */
+  #board {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-image: url("flappybirdbg.png");
+    background-size: cover;
+    background-position: center;
+  }
+  
+  /* ===== Footer ===== */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #222;
+    /* Smaller than before to free up vertical space */
+    padding: 10px 15px;
+    margin-top: 10px;
+    border: 3px solid #ffcc00;  /* border around the entire footer */
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+  
+  .instructions h2 {
+    color: #ffcc00;
+    margin-bottom: 5px;
+  }
+  
+  .favorites-button {
+    background-color: #ffcc00;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #121212;
+  }
+  
+  .favorites-button:hover {
+    background-color: #f1b600;
+  }
+  
+  /* ===== Responsive ===== */
+  @media (max-width: 768px) {
+    .container {
+      flex-direction: column;
+    }
+    .sidebar {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+  }
+  
