@@ -1,107 +1,110 @@
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+// Updated Snake.js for a 1080px x 600px board
 
-const box = 20;
-const canvasSize = 600;
-let snake = [];
-let direction = null; // Snake starts still
-let food;
-let score = 0;
-let game;
-let isGameRunning = false;
-let gameOver = false;
+var blockSize = 20;       // New block size: 20px
+var rows = 30;            // 30 rows → 30 * 20 = 600px height
+var cols = 54;            // 54 columns → 54 * 20 = 1080px width
+var board;
+var context; 
 
-const scoreDisplay = document.getElementById("scoreDisplay");
+// Snake head starting position
+var snakeX = blockSize * 5;  // starting at 100px
+var snakeY = blockSize * 5;
 
-// Listen for arrow key presses to start, control, or restart the game
-document.addEventListener("keydown", (event) => {
-  // If the game is not running, either start a new game or reset if game over
-  if (!isGameRunning) {
-    if (gameOver) {
-      resetGame();
-    } else {
-      isGameRunning = true;
-      game = setInterval(draw, 100);
-    }
-  }
-  
-  // Update direction if valid (prevent direct reversal)
-  if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
-  else if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
-  else if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
-  else if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
-});
+var velocityX = 0;
+var velocityY = 0;
 
-function resetGame() {
-  clearInterval(game);
-  snake = [{ x: 200, y: 200 }];
-  direction = null;
-  isGameRunning = false;
-  gameOver = false;
-  score = 0;
-  updateScore();
-  placeFood();
-  draw(); // Draw the initial state
+var snakeBody = [];
+
+// Food position
+var foodX;
+var foodY;
+
+var gameOver = false;
+
+window.onload = function() {
+    board = document.getElementById("board");
+    board.height = rows * blockSize; // 30 * 20 = 600px
+    board.width = cols * blockSize;  // 54 * 20 = 1080px
+    context = board.getContext("2d"); // used for drawing on the board
+
+    placeFood();
+    document.addEventListener("keyup", changeDirection);
+    setInterval(update, 1000/10); // updates 10 times per second
 }
 
-function updateScore() {
-  scoreDisplay.textContent = "Score: " + score;
+function update() {
+    if (gameOver) {
+        return;
+    }
+
+    // Clear the board with a black background
+    context.fillStyle = "black";
+    context.fillRect(0, 0, board.width, board.height);
+
+    // Draw the food
+    context.fillStyle = "red";
+    context.fillRect(foodX, foodY, blockSize, blockSize);
+
+    // If the snake eats the food, grow the snake and place new food
+    if (snakeX === foodX && snakeY === foodY) {
+        snakeBody.push([foodX, foodY]);
+        placeFood();
+    }
+
+    // Update snake body parts: move each segment to the position of the segment before it
+    for (let i = snakeBody.length - 1; i > 0; i--) {
+        snakeBody[i] = snakeBody[i - 1];
+    }
+    if (snakeBody.length) {
+        snakeBody[0] = [snakeX, snakeY];
+    }
+
+    // Update snake head position
+    snakeX += velocityX * blockSize;
+    snakeY += velocityY * blockSize;
+    
+    // Draw the snake head
+    context.fillStyle = "lime";
+    context.fillRect(snakeX, snakeY, blockSize, blockSize);
+    
+    // Draw the snake body
+    for (let i = 0; i < snakeBody.length; i++) {
+        context.fillRect(snakeBody[i][0], snakeBody[i][1], blockSize, blockSize);
+    }
+
+    // Game over conditions: if snake hits the walls
+    if (snakeX < 0 || snakeX >= cols * blockSize || snakeY < 0 || snakeY >= rows * blockSize) {
+        gameOver = true;
+        alert("Game Over");
+    }
+
+    // Game over condition: if snake hits itself
+    for (let i = 0; i < snakeBody.length; i++) {
+        if (snakeX === snakeBody[i][0] && snakeY === snakeBody[i][1]) {
+            gameOver = true;
+            alert("Game Over");
+        }
+    }
+}
+
+function changeDirection(e) {
+    if (e.code === "ArrowUp" && velocityY !== 1) {
+        velocityX = 0;
+        velocityY = -1;
+    } else if (e.code === "ArrowDown" && velocityY !== -1) {
+        velocityX = 0;
+        velocityY = 1;
+    } else if (e.code === "ArrowLeft" && velocityX !== 1) {
+        velocityX = -1;
+        velocityY = 0;
+    } else if (e.code === "ArrowRight" && velocityX !== -1) {
+        velocityX = 1;
+        velocityY = 0;
+    }
 }
 
 function placeFood() {
-  food = {
-    x: Math.floor(Math.random() * (canvasSize / box)) * box,
-    y: Math.floor(Math.random() * (canvasSize / box)) * box
-  };
-}
-
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Draw the snake
-  for (let i = 0; i < snake.length; i++) {
-    ctx.fillStyle = i === 0 ? "lime" : "lightgreen";
-    ctx.fillRect(snake[i].x, snake[i].y, box, box);
-  }
-
-  // Draw the food
-  ctx.fillStyle = "red";
-  ctx.fillRect(food.x, food.y, box, box);
-
-  // If no direction has been pressed yet, don't move the snake
-  if (!direction) return;
-
-  // Move snake: Create new head based on direction
-  let head = { ...snake[0] };
-  if (direction === "UP") head.y -= box;
-  if (direction === "DOWN") head.y += box;
-  if (direction === "LEFT") head.x -= box;
-  if (direction === "RIGHT") head.x += box;
-
-  // Check for collisions (walls or self)
-  if (
-    head.x < 0 || head.x >= canvasSize ||
-    head.y < 0 || head.y >= canvasSize ||
-    snake.some(segment => segment.x === head.x && segment.y === head.y)
-  ) {
-    clearInterval(game);
-    alert("Game Over! Your score: " + score);
-    direction = null;
-    isGameRunning = false;
-    gameOver = true;
-    return;
-  }
-
-  // Add new head to the snake
-  snake.unshift(head);
-
-  // If the snake eats the food, increase score and place new food;
-  // otherwise, remove the tail segment
-  if (head.x === food.x && head.y === food.y) {
-    score++;
-    updateScore();
-    placeFood();
-  } else {
-    snake.pop();
-  }
+    // Place food on a random grid position
+    foodX = Math.floor(Math.random() * cols) * blockSize;
+    foodY = Math.floor(Math.random() * rows) * blockSize;
 }

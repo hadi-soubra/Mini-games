@@ -109,7 +109,6 @@ canvas{
 }
 
 #board {
-  background-image: url("./flappybirdbg.png");
   width: 100%;
   max-width: 1080px; 
   max-height: 600px;
