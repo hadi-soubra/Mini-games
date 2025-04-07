@@ -36,6 +36,7 @@ let gravity = 0.1;
 
 let gameOver = false;
 let score = 0;
+let highscore=0;
 
 //sounds
 let falloff = new Audio("./sfx_die.wav");
@@ -80,7 +81,7 @@ function update() {
     bird.y = Math.max(bird.y + velocityY, 0); //apply gravity to current bird.y, limit the bird.y to top of the canvas
     context.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
 
-    if (bird.y > board.height-75) {
+    if (bird.y > board.height-50) {
         falloff.play();
         gameOver = true;
     }
@@ -94,6 +95,11 @@ function update() {
         if (!pipe.passed && bird.x > pipe.x) {
             scoreplus.play();
             score += 0.5; //0.5 because there are 2 pipes! so 0.5*2 = 1, 1 for each set of pipes
+            document.getElementById("score").innerText = score;
+            if(score>highscore){
+                highscore=score;
+                document.getElementById("high-score").innerText = highscore;
+            }
             pipe.passed = true;
         }
 
@@ -108,10 +114,6 @@ function update() {
         pipeArray.shift(); //removes first element from the array
     }
 
-    //score
-    context.fillStyle = "black";
-    context.font="bold 20px sans-serif";
-    context.fillText("Score: "+score, 15, 30);
 
     if (gameOver) {
         context.fillStyle = "red";
@@ -167,6 +169,7 @@ function moveBird(e) {
             bird.y = birdY;
             pipeArray = [];
             score = 0;
+            document.getElementById("score").innerText = score;
             gameOver = false;
         }
     }
