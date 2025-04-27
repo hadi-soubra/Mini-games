@@ -9,6 +9,14 @@ let activeBoard = null; // Which small board is active (null means player can ch
 let gameOver = false;
 let winner = null;
 
+// sounds
+var drawSound      = new Audio('draw-sound.mp3');
+drawSound.preload   = 'auto';
+var captureSound   = new Audio('capture-sound.mp3');
+captureSound.preload= 'auto';
+var winSound       = new Audio('win-sound.mp3');
+winSound.preload    = 'auto';   
+
 // Board measurements
 const BOARD_WIDTH = 1080;
 const BOARD_HEIGHT = 600;
@@ -33,16 +41,18 @@ const THICK_LINE_WIDTH = 4;
 // Colors - Dark mode theme
 const BACKGROUND_COLOR = "#121212"; // Dark background
 const LINE_COLOR = "#BBBBBB"; // Light gray lines
-const ACTIVE_BOARD_COLOR = "rgba(0, 128, 255, 0.15)"; // More subtle highlight
+const ACTIVE_BOARD_COLOR = "rgba(128, 128, 128, 0.3)"; // Changed to transparent gray
 const PLAYER_X_COLOR = "#4F8EF7"; // Light blue for X
 const PLAYER_O_COLOR = "#F76E6E"; // Light red for O
 const GAME_OVER_COLOR = "rgba(0, 0, 0, 0.85)";
 const TEXT_COLOR = "#E0E0E0"; // Light gray text
+const DRAW_COLOR = "rgba(180, 180, 180, 0.2)"; // Color for draw indicators
 
 // Game state
 const mainBoard = Array(MAIN_BOARD_SIZE).fill().map(() => 
     Array(MAIN_BOARD_SIZE).fill().map(() => ({
         winner: null,
+        isDraw: false, // Added draw state for sub-boards
         cells: Array(SUB_BOARD_SIZE).fill().map(() => 
             Array(SUB_BOARD_SIZE).fill(null)
         )
@@ -111,8 +121,8 @@ function handleClick(event) {
         }
     }
     
-    // Check if the subboard is already won
-    if (mainBoard[mainRow][mainCol].winner !== null) {
+    // Check if the subboard is already won or drawn
+    if (mainBoard[mainRow][mainCol].winner !== null || mainBoard[mainRow][mainCol].isDraw) {
         return;
     }
     
@@ -124,22 +134,41 @@ function handleClick(event) {
     // Make the move
     mainBoard[mainRow][mainCol].cells[subRow][subCol] = currentPlayer;
     
+    // Play draw sound every time a player places an X or O
+    drawSound.currentTime = 4;
+    drawSound.play();
+    
     // Check if the move won the subboard
     if (checkSubBoardWin(mainRow, mainCol)) {
+        captureSound.play();
         mainBoard[mainRow][mainCol].winner = currentPlayer;
         
         // Check if the move won the main board
         if (checkMainBoardWin()) {
             winner = currentPlayer;
             gameOver = true;
+            winSound.play(); // Play win sound when a player wins the game
         }
+    } 
+    // Check if the sub-board is a draw
+    else if (checkSubBoardDraw(mainRow, mainCol)) {
+        mainBoard[mainRow][mainCol].isDraw = true;
+        // We'll still play the capture sound instead of draw sound for sub-board draws
+        captureSound.play();
+    }
+    
+    // Check if the main board is now a draw - must check after evaluating the current move
+    if (!gameOver && checkMainBoardDraw()) {
+        gameOver = true;
+        winner = "Draw";
+        captureSound.play(); // Use capture sound for final draw
     }
     
     // Determine the next active board based on the last move
-    if (mainBoard[subRow][subCol].winner === null) {
+    if (!mainBoard[subRow][subCol].winner && !mainBoard[subRow][subCol].isDraw) {
         activeBoard = { row: subRow, col: subCol };
     } else {
-        activeBoard = null; // If the target board is already won, player can choose any board
+        activeBoard = null; // If the target board is already won or drawn, player can choose any board
     }
     
     // Switch player
@@ -148,14 +177,6 @@ function handleClick(event) {
     // Redraw the board
     drawBoard();
     updateInfo();
-    
-    // Check if the game is a draw
-    if (!gameOver && checkForDraw()) {
-        gameOver = true;
-        winner = "Draw";
-        updateInfo();
-        drawGameOver();
-    }
     
     // If game is over, draw game over screen
     if (gameOver) {
@@ -192,6 +213,23 @@ function checkSubBoardWin(mainRow, mainCol) {
     }
     
     return false;
+}
+
+// Check if a sub-board is a draw (all cells filled but no winner)
+function checkSubBoardDraw(mainRow, mainCol) {
+    const board = mainBoard[mainRow][mainCol].cells;
+    
+    // Check if all cells are filled
+    for (let i = 0; i < SUB_BOARD_SIZE; i++) {
+        for (let j = 0; j < SUB_BOARD_SIZE; j++) {
+            if (board[i][j] === null) {
+                return false; // There's an empty cell, so not a draw yet
+            }
+        }
+    }
+    
+    // If we got here, all cells are filled and there's no winner (already checked in handleClick)
+    return true;
 }
 
 // Check if the game is won on the main board
@@ -232,24 +270,76 @@ function checkMainBoardWin() {
     return false;
 }
 
-// Check if the game is a draw
-function checkForDraw() {
-    // Check if all cells in all boards are filled or if all boards have winners
-    for (let i = 0; i < MAIN_BOARD_SIZE; i++) {
-        for (let j = 0; j < MAIN_BOARD_SIZE; j++) {
-            if (mainBoard[i][j].winner === null) {
-                // Check if there are still empty cells in this subboard
-                for (let k = 0; k < SUB_BOARD_SIZE; k++) {
-                    for (let l = 0; l < SUB_BOARD_SIZE; l++) {
-                        if (mainBoard[i][j].cells[k][l] === null) {
-                            return false; // There's still an empty cell
-                        }
-                    }
-                }
+// Check if the main board is a draw
+function checkMainBoardDraw() {
+    // Check if any line (row, column, diagonal) can still be completed by either player
+    const size = MAIN_BOARD_SIZE;
+    
+    // Helper function to check if a position is available (not won by opponent)
+    const isAvailable = (row, col, player) => {
+        return mainBoard[row][col].winner !== getOpponent(player) && !mainBoard[row][col].isDraw;
+    };
+    
+    // Helper function to get opponent
+    const getOpponent = (player) => {
+        return player === "X" ? "O" : "X";
+    };
+    
+    // Check if any player can still win
+    const canPlayerWin = (player) => {
+        // Check rows
+        for (let i = 0; i < size; i++) {
+            if (isAvailable(i, 0, player) && isAvailable(i, 1, player) && isAvailable(i, 2, player)) {
+                // Check if row is not already blocked by drawn boards
+                const drawnCount = [0, 1, 2].filter(j => mainBoard[i][j].isDraw).length;
+                const wonCount = [0, 1, 2].filter(j => mainBoard[i][j].winner === player).length;
+                if (drawnCount + wonCount < 3) return true;
             }
         }
+        
+        // Check columns
+        for (let j = 0; j < size; j++) {
+            if (isAvailable(0, j, player) && isAvailable(1, j, player) && isAvailable(2, j, player)) {
+                // Check if column is not already blocked by drawn boards
+                const drawnCount = [0, 1, 2].filter(i => mainBoard[i][j].isDraw).length;
+                const wonCount = [0, 1, 2].filter(i => mainBoard[i][j].winner === player).length;
+                if (drawnCount + wonCount < 3) return true;
+            }
+        }
+        
+        // Check diagonals
+        if (isAvailable(0, 0, player) && isAvailable(1, 1, player) && isAvailable(2, 2, player)) {
+            const drawnCount = [0, 1, 2].filter(i => mainBoard[i][i].isDraw).length;
+            const wonCount = [0, 1, 2].filter(i => mainBoard[i][i].winner === player).length;
+            if (drawnCount + wonCount < 3) return true;
+        }
+        
+        if (isAvailable(0, 2, player) && isAvailable(1, 1, player) && isAvailable(2, 0, player)) {
+            const drawnCount = [0, 1, 2].filter(i => mainBoard[i][2-i].isDraw).length;
+            const wonCount = [0, 1, 2].filter(i => mainBoard[i][2-i].winner === player).length;
+            if (drawnCount + wonCount < 3) return true;
+        }
+        
+        return false;
+    };
+    
+    // Check if there are any empty subboards left
+    let allBoardsDecided = true;
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+            if (mainBoard[i][j].winner === null && !mainBoard[i][j].isDraw) {
+                allBoardsDecided = false;
+                break;
+            }
+        }
+        if (!allBoardsDecided) break;
     }
-    return true;
+    
+    // If all boards are decided (won or drawn) and no player can win, it's a draw
+    if (allBoardsDecided) return true;
+    
+    // If neither player can win anymore, it's a draw
+    return !canPlayerWin("X") && !canPlayerWin("O");
 }
 
 // Draw the game board
@@ -284,6 +374,10 @@ function drawBoard() {
             // If the subboard has a winner, draw over it
             if (mainBoard[i][j].winner !== null) {
                 drawSubBoardWinner(i, j);
+            }
+            // If the subboard is a draw, draw the draw indicator
+            else if (mainBoard[i][j].isDraw) {
+                drawSubBoardDraw(i, j);
             }
         }
     }
@@ -433,7 +527,44 @@ function drawSubBoardWinner(mainRow, mainCol) {
     }
 }
 
-// Update the info panel - simplified to only show current player
+// Draw a draw indicator over a subboard
+function drawSubBoardDraw(mainRow, mainCol) {
+    const x = GAME_OFFSET_X + mainCol * BOARD_SIZE;
+    const y = GAME_OFFSET_Y + mainRow * BOARD_SIZE;
+    
+    // Semi-transparent gray overlay for draw
+    context.fillStyle = DRAW_COLOR;
+    context.fillRect(x, y, BOARD_SIZE, BOARD_SIZE);
+    
+    // Draw a hash/grid pattern to indicate a draw
+    context.strokeStyle = TEXT_COLOR;
+    context.lineWidth = 2;
+    
+    const padding = BOARD_SIZE * 0.2;
+    const innerSize = BOARD_SIZE - (padding * 2);
+    
+    // Draw a grid/hash symbol
+    const gridSize = 3;
+    const gridStep = innerSize / gridSize;
+    
+    // Draw vertical grid lines
+    for (let i = 1; i < gridSize; i++) {
+        context.beginPath();
+        context.moveTo(x + padding + i * gridStep, y + padding);
+        context.lineTo(x + padding + i * gridStep, y + padding + innerSize);
+        context.stroke();
+    }
+    
+    // Draw horizontal grid lines
+    for (let i = 1; i < gridSize; i++) {
+        context.beginPath();
+        context.moveTo(x + padding, y + padding + i * gridStep);
+        context.lineTo(x + padding + innerSize, y + padding + i * gridStep);
+        context.stroke();
+    }
+}
+
+// Update the info panel - simplified to only show current player and active board
 function updateInfo() {
     context.fillStyle = BACKGROUND_COLOR;
     context.fillRect(INFO_OFFSET_X, GAME_OFFSET_Y, INFO_WIDTH, GAME_HEIGHT);
@@ -444,9 +575,12 @@ function updateInfo() {
     context.fillStyle = TEXT_COLOR;
     context.fillText("Current Player", INFO_OFFSET_X + INFO_WIDTH / 2, GAME_OFFSET_Y + 180);
     
-    // Current player symbol - much larger
-    const playerIndicatorY = GAME_OFFSET_Y + 300;
-    const playerSymbolSize = 200;
+    // Draw rounded rectangle card for player symbol
+    const cardX = INFO_OFFSET_X + 20;
+    const cardY = GAME_OFFSET_Y + 200;
+    const cardWidth = INFO_WIDTH - 40;
+    const cardHeight = 200;
+    const cardRadius = 15;
     
     // Add player background card with color (darker for dark mode)
     if (currentPlayer === "X") {
@@ -456,13 +590,6 @@ function updateInfo() {
         // Red card background for O
         context.fillStyle = "rgba(247, 110, 110, 0.15)";
     }
-    
-    // Draw rounded rectangle card
-    const cardX = INFO_OFFSET_X + 20;
-    const cardY = playerIndicatorY - 100;
-    const cardWidth = INFO_WIDTH - 40;
-    const cardHeight = 200;
-    const cardRadius = 15;
     
     // Draw card background
     context.beginPath();
@@ -474,48 +601,51 @@ function updateInfo() {
     context.lineWidth = 3;
     context.stroke();
     
-    // Draw player symbol
+    // Draw player symbol centered in the card
+    const centerX = cardX + cardWidth / 2;
+    const centerY = cardY + cardHeight / 2;
+    const symbolSize = 150; // Slightly smaller for better centering
+    
     if (currentPlayer === "X") {
         context.fillStyle = PLAYER_X_COLOR;
-        context.font = `${playerSymbolSize}px Arial`;
-        context.fillText("X", INFO_OFFSET_X + INFO_WIDTH / 2, playerIndicatorY + 70);
+        context.font = `${symbolSize}px Arial`;
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText("X", centerX, centerY);
     } else {
         context.fillStyle = PLAYER_O_COLOR;
-        context.font = `${playerSymbolSize}px Arial`;
-        context.fillText("O", INFO_OFFSET_X + INFO_WIDTH / 2, playerIndicatorY + 70);
+        context.font = `${symbolSize}px Arial`;
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText("O", centerX, centerY);
     }
     
-    // Game status - only show if game is over
+    // Reset text baseline for remaining text
+    context.textBaseline = "alphabetic";
+    
+    // Show active board indicator at the bottom of the info panel
+    context.fillStyle = TEXT_COLOR;
+    context.font = "24px Arial";
+    context.textAlign = "center";
+    
+    if (activeBoard === null) {
+        context.fillText("Any board is active", INFO_OFFSET_X + INFO_WIDTH / 2, GAME_OFFSET_Y + GAME_HEIGHT - 100);
+    } else {
+        context.fillText(`Active: R${activeBoard.row + 1}, C${activeBoard.col + 1}`, 
+                       INFO_OFFSET_X + INFO_WIDTH / 2, GAME_OFFSET_Y + GAME_HEIGHT - 100);
+    }
+    
+    // If game is over, show simple game over message
     if (gameOver) {
         context.fillStyle = TEXT_COLOR;
         context.font = "24px Arial";
         context.textAlign = "center";
-        context.fillText("Game Status:", INFO_OFFSET_X + INFO_WIDTH / 2, GAME_OFFSET_Y + 380);
         
         if (winner === "Draw") {
-            context.fillText("Game Over - Draw!", INFO_OFFSET_X + INFO_WIDTH / 2, GAME_OFFSET_Y + 420);
+            context.fillText("Game Over - Draw", INFO_OFFSET_X + INFO_WIDTH / 2, GAME_OFFSET_Y + GAME_HEIGHT - 50);
         } else {
             context.fillStyle = winner === "X" ? PLAYER_X_COLOR : PLAYER_O_COLOR;
-            context.fillText(`Player ${winner} Wins!`, INFO_OFFSET_X + INFO_WIDTH / 2, GAME_OFFSET_Y + 420);
-        }
-        
-        // Show reset instruction
-        context.fillStyle = TEXT_COLOR;
-        context.font = "18px Arial";
-        context.fillText("Press SPACEBAR to restart", INFO_OFFSET_X + INFO_WIDTH / 2, GAME_OFFSET_Y + 460);
-    }
-    
-    // Show subtle indicator for active board near the bottom of the info panel
-    if (!gameOver) {
-        context.fillStyle = TEXT_COLOR;
-        context.font = "16px Arial";
-        context.textAlign = "center";
-        
-        if (activeBoard === null) {
-            context.fillText("Any board is active", INFO_OFFSET_X + INFO_WIDTH / 2, GAME_OFFSET_Y + GAME_HEIGHT - 100);
-        } else {
-            context.fillText(`Active: R${activeBoard.row + 1}, C${activeBoard.col + 1}`, 
-                           INFO_OFFSET_X + INFO_WIDTH / 2, GAME_OFFSET_Y + GAME_HEIGHT - 100);
+            context.fillText(`Player ${winner} Wins!`, INFO_OFFSET_X + INFO_WIDTH / 2, GAME_OFFSET_Y + GAME_HEIGHT - 50);
         }
     }
 }
@@ -538,6 +668,9 @@ function drawGameOver() {
         context.fillText(`PLAYER ${winner} WINS!`, 
                         GAME_OFFSET_X + GAME_WIDTH / 2, 
                         GAME_OFFSET_Y + GAME_HEIGHT / 2 - 40);
+        
+        // Play win sound when showing the game over screen
+        winSound.play();
     }
     
     context.fillStyle = "white";
@@ -559,6 +692,7 @@ function resetGame() {
     for (let i = 0; i < MAIN_BOARD_SIZE; i++) {
         for (let j = 0; j < MAIN_BOARD_SIZE; j++) {
             mainBoard[i][j].winner = null;
+            mainBoard[i][j].isDraw = false; // Reset draw state
             for (let k = 0; k < SUB_BOARD_SIZE; k++) {
                 for (let l = 0; l < SUB_BOARD_SIZE; l++) {
                     mainBoard[i][j].cells[k][l] = null;
