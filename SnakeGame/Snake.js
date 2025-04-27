@@ -14,6 +14,14 @@ var snakeBody = [], foodX, foodY;
 var gameOver = false;
 var score = 0, highscore = 0;
 
+// ─── Audio Assets ───────────────────────────────────────────────────────────
+var moveSound       = new Audio('move.mp3');
+moveSound.preload    = 'auto';
+var foodSound       = new Audio('food.mp3');
+foodSound.preload    = 'auto';
+var gameoverSound   = new Audio('gameover.mp3');
+gameoverSound.preload= 'auto';
+
 // ─── Load Snake Head Image ───────────────────────────────────────────────────
 var snakeHeadImg = new Image();
 var headLoaded   = false;
@@ -99,6 +107,7 @@ function update() {
       highscore = score;
       document.getElementById("high-score").innerText = highscore;
     }
+    foodSound.play();
     // speed up every 5 points
     if (score % 5 === 0 && gameSpeed > 50) {
       clearInterval(gameInterval);
@@ -120,7 +129,6 @@ function update() {
     nextX < 0 || nextX >= cols * blockSize ||
     nextY < 0 || nextY >= rows * blockSize;
 
-  // only update head coords if not hitting wall (keeps last visible position)
   if (!hitWall) {
     snakeX = nextX;
     snakeY = nextY;
@@ -134,7 +142,7 @@ function update() {
     context.fill();
   }
 
-  // 8) Draw head (at last valid position)
+  // 8) Draw head
   if (headLoaded) {
     context.drawImage(snakeHeadImg, snakeX, snakeY, blockSize, blockSize);
   } else {
@@ -144,15 +152,17 @@ function update() {
     context.fill();
   }
 
-  // 9) Handle wall collision now that snake is visible
+  // 9) Wall collision
   if (hitWall) {
+    gameoverSound.play();
     gameOverAction();
     return;
   }
 
-  // 10) Check self-collision
+  // 10) Self-collision
   for (let seg of snakeBody) {
     if (snakeX === seg[0] && snakeY === seg[1]) {
+      gameoverSound.play();
       gameOverAction();
       break;
     }
@@ -161,10 +171,12 @@ function update() {
 
 // ─── Direction & Restart ────────────────────────────────────────────────────
 function changeDirection(e) {
-  if (e.code === "ArrowUp"    && velocityY !== 1)    { velocityX = 0;  velocityY = -1; }
-  else if (e.code === "ArrowDown"  && velocityY !== -1) { velocityX = 0;  velocityY = 1; }
-  else if (e.code === "ArrowLeft"  && velocityX !== 1)  { velocityX = -1; velocityY = 0; }
-  else if (e.code === "ArrowRight" && velocityX !== -1) { velocityX = 1;  velocityY = 0; }
+  let moved = false;
+  if (e.code === "ArrowUp"    && velocityY !== 1)    { velocityX = 0;  velocityY = -1; moved = true; }
+  else if (e.code === "ArrowDown"  && velocityY !== -1) { velocityX = 0;  velocityY = 1;  moved = true; }
+  else if (e.code === "ArrowLeft"  && velocityX !== 1)  { velocityX = -1; velocityY = 0;  moved = true; }
+  else if (e.code === "ArrowRight" && velocityX !== -1) { velocityX = 1;  velocityY = 0;  moved = true; }
+  if (moved) moveSound.play();
 }
 
 function restartGame() {
