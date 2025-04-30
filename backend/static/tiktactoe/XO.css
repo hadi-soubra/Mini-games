@@ -152,3 +152,22 @@ canvas{
                       .footer button:hover {
                         background-color: #e0a500;
                       }
+                      
+/* FAVORITES BUTTON STATES */
+.footer button#fav-btn {
+  /* match your existing button style */
+  background-color: #f1b600;
+  color: #222;
+}
+.footer button#fav-btn:hover {
+  background-color: #e0a500;
+}
+
+/* When favorited, turn grey */
+.footer button#fav-btn.favorited {
+  background-color: #444;
+  color: #fff;
+}
+.footer button#fav-btn.favorited:hover {
+  background-color: #b81313;
+}

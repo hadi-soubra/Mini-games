@@ -58,7 +58,53 @@ const mainBoard = Array(MAIN_BOARD_SIZE).fill().map(() =>
         )
     }))
 );
+// Game configuration
+const GAME_NAME = 'UltimateTicTacToe';
 
+// Added favButton variable
+let favButton;
+
+// Added favorites helpers functions
+// Initialize the favorites button state and click handler
+function initFavoriteButton() {
+    favButton = document.getElementById('fav-btn');
+    fetch('/my_favorites', { credentials: 'same-origin' })
+        .then(r => r.json())
+        .then(list => {
+            const isFav = list.includes(GAME_NAME);
+            favButton.classList.toggle('favorited', isFav);
+            favButton.innerText = isFav
+                ? '★ Remove from Favorites'
+                : '☆ Add to Favorites';
+            favButton.addEventListener('click', toggleFavorite);
+        })
+        .catch(err => console.error('Error loading favorites:', err));
+}
+
+// Toggle favorite/unfavorite on button click
+function toggleFavorite() {
+    const isFav = favButton.classList.contains('favorited');
+    const url = isFav ? '/unfavorite' : '/favorite';
+    fetch(url, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `game=${encodeURIComponent(GAME_NAME)}`
+    })
+    .then(r => r.json())
+    .then(data => {
+        if ((isFav && data.status === 'removed') ||
+            (!isFav && data.status === 'added')) {
+            favButton.classList.toggle('favorited');
+            favButton.innerText = favButton.classList.contains('favorited')
+                ? '★ Remove from Favorites'
+                : '☆ Add to Favorites';
+        } else {
+            console.error('Favorite toggle failed:', data);
+        }
+    })
+    .catch(err => console.error('Error toggling favorite:', err));
+}
 // Initialize the game when the window loads
 window.onload = function() {
     board = document.getElementById("board");
@@ -70,11 +116,12 @@ window.onload = function() {
     document.body.style.backgroundColor = BACKGROUND_COLOR;
     document.body.style.margin = "0";
     document.body.style.padding = "0";
-    document.body.style.overflow = "hidden";
+    
     
     board.addEventListener("click", handleClick);
     document.addEventListener("keydown", handleKeyDown);
-    
+    initFavoriteButton();
+
     drawBoard();
     updateInfo();
 };
