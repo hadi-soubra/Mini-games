@@ -70,6 +70,51 @@ body {
   border: 1px solid #f1b600;
 }
 
+/* Remove default bullets, reset spacing */
+#leaderboard-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Style each entry as a flex row: username on the left, score on the right */
+#leaderboard-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem ;
+  border-bottom: 2px solid #ffffff;
+  font-size: 0.95rem;
+}
+
+/* No border on the last item */
+#leaderboard-list li:last-child {
+  border-bottom: none;
+}
+
+/* Username styling */
+#leaderboard-list li .username {
+  font-weight: 600;
+  color: #f1b600;
+}
+
+/* Score styling */
+#leaderboard-list li .score {
+  background-color: #444;
+  padding: 0px;
+  margin-bottom: 4px;
+  border-radius: 0px;
+  border: 0px solid #000000;
+  font-weight: 700;
+  color: #9e884f;
+}
+
+/* Optional: scroll if too many entries */
+#leaderboard-list {
+  max-height: 30rem;      /* adjust to your sidebar’s height */
+  overflow-y: auto;
+}
+
 
 /* Score heading styles */
 .score h2 {
@@ -118,38 +163,57 @@ canvas{
   border-radius: 10px;
 }
 
-                      .footer {
-                        align-self: center;
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        background-color: #222;
-                        padding: 20px;
-                        width: 95%;
-                        border: 2px solid #f1b600;
-                        border-radius: 8px;
-                        margin-bottom: 20px;
-                      }
+.footer {
+  align-self: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #222;
+  padding: 20px;
+  width: 95%;
+  border: 2px solid #f1b600;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
 
-                      .footer h2 {
-                        margin: 0 0 10px;
-                      }
+.footer h2 {
+  margin: 0 0 10px;
+}
 
-                      .footer p {
-                        margin: 5px 0;
-                      }
+.footer p {
+  margin: 5px 0;
+}
 
-                      .footer button {
-                        background-color: #f1b600;
-                        color: #222;
-                        padding: 10px 20px;
-                        border: none;
-                        border-radius: 5px;
-                        cursor: pointer;
-                        font-weight: bold;
-                        transition: background-color 0.3s ease;
-                      }
+.footer button {
+  background-color: #f1b600;
+  color: #222;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
 
-                      .footer button:hover {
-                        background-color: #e0a500;
-                      }
+.footer button:hover {
+  background-color: #e0a500;
+}
+
+/* FAVORITES BUTTON STATES */
+.footer button#fav-btn {
+  /* match your existing button style */
+  background-color: #f1b600;
+  color: #222;
+}
+.footer button#fav-btn:hover {
+  background-color: #e0a500;
+}
+
+/* When favorited, turn grey */
+.footer button#fav-btn.favorited {
+  background-color: #444;
+  color: #fff;
+}
+.footer button#fav-btn.favorited:hover {
+  background-color: #b81313;
+}

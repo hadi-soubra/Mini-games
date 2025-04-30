@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>HNM Games – My Favorites</title>
+  <link rel="stylesheet" href="favstyle.css" />
+</head>
+<body>
+  <main>
+    <div class="navbar">
+      <a href="./main/HNMgames.html">HNM Games</a>
+      <a href="/logout" class="logout-button">Logout</a>
+    </div>
+    <div class="title">
+      <h1>Play All Your Favorite Games</h1>
+    </div>
+
+    <div class="game-grid" id="favorites-grid">
+      <!-- cards will be injected here -->
+    </div>
+  </main>
+
+  <script>
+    // Map your DB game_name values → display info
+    const gameMeta = {
+      'Snake': {
+        title: 'Snakey Mahmoud',
+        img: '/main/snake.png',
+        url: '/SnakeGame/Snake.html'
+      },
+      'Flappymhmoud': {
+        title: 'Flappy Mahmoud',
+        img: '/main/bird.png',
+        url: '/flappymahmoud/Flappymhmoud.html'
+      },
+      'UltimateTicTacToe': {
+        title: 'Mahmoud Toe (Extreme!)',
+        img: '/main/XO.png',
+        url: '/tiktactoe/XO.html'
+      }
+      // add other games here as needed…
+    };
+
+    fetch('/my_favorites')
+      .then(res => res.json())
+      .then(list => {
+        const grid = document.getElementById('favorites-grid');
+        if (!list.length) {
+          grid.innerHTML = '<p class="no-favs">You have no favorite games yet.</p>';
+          return;
+        }
+        list.forEach(key => {
+          const meta = gameMeta[key];
+          if (!meta) return;  // skip unknown entries
+
+          const card = document.createElement('div');
+          card.className = 'game-card';
+
+          const link = document.createElement('a');
+          link.href = meta.url;
+
+          const img = document.createElement('img');
+          img.src = meta.img;
+          img.alt = meta.title;
+
+          const caption = document.createElement('p');
+          caption.textContent = meta.title;
+
+          link.append(img, caption);
+          card.append(link);
+          grid.append(card);
+        });
+      })
+      .catch(console.error);
+  </script>
+</body>
+</html>
