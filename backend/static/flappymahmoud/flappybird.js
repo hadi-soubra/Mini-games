@@ -36,7 +36,10 @@ let gameOver   = false;
 let score      = 0;
 let highscore  = 0;
 let sentScore  = false;  // ensure we only send once per run
+<<<<<<< HEAD
 let isLoggedIn = false;  // track login status
+=======
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
 
 // ─── Sounds ──────────────────────────────────────────────────────────────────
 const falloff   = new Audio('./sfx_die.wav');
@@ -46,11 +49,14 @@ const wingflap  = new Audio('./sfx_wing.wav');
 
 // ─── Helper: Submit high score to server ─────────────────────────────────────
 function submitHighScore(finalScore) {
+<<<<<<< HEAD
   if (!isLoggedIn) {
     console.log('Not logged in, score not submitted');
     return Promise.resolve();
   }
 
+=======
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
   return fetch('/submit_score', {
     method: 'POST',
     credentials: 'same-origin',
@@ -75,6 +81,7 @@ function submitHighScore(finalScore) {
 
 // ─── Initialize & Fetch Stored High Score ────────────────────────────────────
 function initHighScore() {
+<<<<<<< HEAD
   // Show loading indicator
   highScoreEl.innerText = 'Loading...';
   
@@ -85,10 +92,14 @@ function initHighScore() {
   }
 
   return fetch(`/get_highscore?game=${encodeURIComponent(GAME_NAME)}`, {
+=======
+  fetch(`/get_highscore?game=${encodeURIComponent(GAME_NAME)}`, {
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
     credentials: 'same-origin'
   })
     .then(r => r.json())
     .then(data => {
+<<<<<<< HEAD
       if (data.highscore !== undefined) {
         highscore = data.highscore;
         highScoreEl.innerText = highscore;
@@ -102,11 +113,21 @@ function initHighScore() {
       console.error('Error fetching high score:', err);
       highScoreEl.innerText = '0';
     });
+=======
+      highscore = data.highscore;
+      highScoreEl.innerText = highscore;
+    })
+    .catch(err => console.error('Error fetching high score:', err));
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
 }
 
 // ─── Fetch top-10 high scores across all users and render the leaderboard ────
 function loadLeaderboard() {
+<<<<<<< HEAD
   return fetch(`/leaderboard?game=${encodeURIComponent(GAME_NAME)}&top=10`, {
+=======
+  fetch(`/leaderboard?game=${encodeURIComponent(GAME_NAME)}&top=10`, {
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
     credentials: 'same-origin'
   })
     .then(r => r.json())
@@ -126,6 +147,10 @@ function loadLeaderboard() {
         li.append(userSpan, scoreSpan);
         leaderboardEl.appendChild(li);
       });
+<<<<<<< HEAD
+=======
+      
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
     })
     .catch(err => console.error('Error loading leaderboard:', err));
 }
@@ -135,6 +160,7 @@ function loadLeaderboard() {
 // Initialize the favorites button state and click handler
 function initFavoriteButton() {
   favButton = document.getElementById('fav-btn');
+<<<<<<< HEAD
   
   // Don't initialize if not logged in
   if (!isLoggedIn) {
@@ -144,6 +170,9 @@ function initFavoriteButton() {
   }
 
   return fetch('/my_favorites', { credentials: 'same-origin' })
+=======
+  fetch('/my_favorites', { credentials: 'same-origin' })
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
     .then(r => r.json())
     .then(list => {
       const isFav = list.includes(GAME_NAME);
@@ -181,6 +210,7 @@ function toggleFavorite() {
   .catch(err => console.error('Error toggling favorite:', err));
 }
 
+<<<<<<< HEAD
 // ─── Check Authentication Status ─────────────────────────────────────────────
 function checkAuthStatus() {
   return fetch('/check_auth', {
@@ -228,6 +258,8 @@ function checkAuthStatus() {
   });
 }
 
+=======
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
 // ─── Entry Point ──────────────────────────────────────────────────────────────
 window.onload = function() {
   // Canvas setup
@@ -242,6 +274,7 @@ window.onload = function() {
   bottomPipeImg  = new Image(); bottomPipeImg.src  = './bottompipe.png';
 
   // Initialize displayed scores
+<<<<<<< HEAD
   scoreEl.innerText = score;
   highScoreEl.innerText = 'Loading...';
   
@@ -252,6 +285,19 @@ window.onload = function() {
       requestAnimationFrame(update);
       setInterval(placePipes, 1500);
     });
+=======
+  scoreEl.innerText     = score;
+  highScoreEl.innerText = '…';
+  
+  // Load persisted data
+  initHighScore();
+  loadLeaderboard();
+  initFavoriteButton();
+
+  // Start loops
+  requestAnimationFrame(update);
+  setInterval(placePipes, 1500);
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
 
   // Prevent page scroll on space & arrows
   document.addEventListener('keydown', e => {
@@ -272,7 +318,10 @@ function update() {
   // Clear board
   context.clearRect(0, 0, boardWidth, boardHeight);
 
+<<<<<<< HEAD
   
+=======
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
   // Apply gravity
   velocityY += gravity;
   velocityY *= 0.99;
@@ -332,7 +381,11 @@ function update() {
 
 // ─── End-of-Game Logic ───────────────────────────────────────────────────────
 function endGame() {
+<<<<<<< HEAD
   if (!sentScore && isLoggedIn) {
+=======
+  if (!sentScore) {
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
     sentScore = true;
     // Submit the stored high score to the server
     submitHighScore(Math.floor(highscore));
