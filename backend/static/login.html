@@ -5,13 +5,32 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>HNM Games – Login</title>
   <link rel="stylesheet" href="style.css">
+<<<<<<< HEAD
+  <style>
+    .error-message {
+      color: #ff6b6b;
+      background-color: rgba(255, 107, 107, 0.1);
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 15px;
+      text-align: center;
+      display: none;
+    }
+  </style>
+=======
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
 </head>
 <body>
   <main>
     <h1><a href="main/HNMgames.html" class="page-title">HNM Games</a></h1>
     <div class="login-card">
       <h2>Log In</h2>
+<<<<<<< HEAD
+      <div id="error-container" class="error-message"></div>
+      <form id="login-form">
+=======
       <form action="/login" method="POST">
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
         <label for="username">Username</label>
         <input
           type="text"
@@ -33,11 +52,51 @@
         <button type="submit">Log In</button>
       </form>
       <p class="signup-link">
+<<<<<<< HEAD
+        Don't have an account?
+=======
         Don’t have an account?
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
         <a href="signup.html">Sign up</a>
       </p>
     </div>
   </main>
+<<<<<<< HEAD
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const errorContainer = document.getElementById('error-container');
+      errorContainer.style.display = 'none';
+      
+      // Form data preparation
+      const formData = new FormData(this);
+      
+      // AJAX request to server
+      fetch('/login', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => {
+        if (response.ok) {
+          window.location.href = '/main/HNMgames.html';
+        } else {
+          return response.text().then(text => {
+            throw new Error(text || 'Invalid username or password');
+          });
+        }
+      })
+      .catch(error => {
+        errorContainer.textContent = error.message;
+        errorContainer.style.display = 'block';
+      });
+    });
+  </script>
+</body>
+</html>
+=======
 </body>
 </html>
   
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e

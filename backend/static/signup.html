@@ -5,13 +5,32 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>HNM Games – Sign Up</title>
   <link rel="stylesheet" href="style.css">
+<<<<<<< HEAD
+  <style>
+    .error-message {
+      color: #ff6b6b;
+      background-color: rgba(255, 107, 107, 0.1);
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 15px;
+      text-align: center;
+      display: none;
+    }
+  </style>
+=======
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
 </head>
 <body>
   <main>
     <h1><a href="main/HNMgames.html" class="page-title">HNM Games</a></h1>
     <div class="login-card">
       <h2>Sign Up</h2>
+<<<<<<< HEAD
+      <div id="error-container" class="error-message"></div>
+      <form id="signup-form">
+=======
       <form action="/signup" method="POST">
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
         <label for="username">Username</label>
         <input
           type="text"
@@ -56,5 +75,54 @@
       </p>
     </div>
   </main>
+<<<<<<< HEAD
+
+  <script>
+    document.getElementById('signup-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const errorContainer = document.getElementById('error-container');
+      errorContainer.style.display = 'none';
+      
+      // Client-side password match validation
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      
+      if (password !== confirmPassword) {
+        errorContainer.textContent = 'Passwords do not match';
+        errorContainer.style.display = 'block';
+        return;
+      }
+      
+      // Form data preparation
+      const formData = new FormData(this);
+      
+      // AJAX request to server
+      fetch('/signup', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          // Display error message
+          errorContainer.textContent = data.error;
+          errorContainer.style.display = 'block';
+        } else if (data.success) {
+          // Redirect on success
+          window.location.href = data.redirect;
+        }
+      })
+      .catch(error => {
+        errorContainer.textContent = 'An unexpected error occurred. Please try again.';
+        errorContainer.style.display = 'block';
+        console.error('Error:', error);
+      });
+    });
+  </script>
 </body>
 </html>
+=======
+</body>
+</html>
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e

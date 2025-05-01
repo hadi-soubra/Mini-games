@@ -54,6 +54,10 @@ body {
     text-align: center;
     transition: 0.3s;
     cursor: pointer;
+<<<<<<< HEAD
+    max-width: 30rem;
+=======
+>>>>>>> 16ae3b74d7912ffbf277e95057b5bbea63b8384e
 }
 .game-card:hover {
     transform: scale(1.05);
