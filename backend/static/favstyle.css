@@ -1,0 +1,90 @@
+/* Page reset & basics */
+body {
+    margin: 0;
+    padding: 0;
+    background: #121212;
+    color: #fff;
+    font-family: sans-serif;
+  }
+  
+  /* Top nav */
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    padding: 12.5px 20px;
+}
+  .navbar a {
+    color: #ffcc00;
+    font-size: 24px;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  .logout-button {
+    font-weight: 600;
+  }
+  
+  /* Title */
+  .title{
+
+    color: #ffcc00;
+    display: flex;
+    flex-direction: column;
+    margin-left: 3%;
+    
+}
+
+  
+  /* Grid of cards */
+  .game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive grid */
+    gap: 2%;
+    width: 96%;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+  
+  /* Individual card */
+  .game-card {
+    background: #333;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    transition: 0.3s;
+    cursor: pointer;
+    max-width: 30rem;
+}
+.game-card:hover {
+    transform: scale(1.05);
+}
+.game-card img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.game-card a {
+    text-decoration: none;
+  }
+  
+  /* style the caption text */
+  .game-card a p {
+    text-decoration: none;
+    color: #fff;
+    font-size: 1.2rem;
+    margin-top: 10px;
+  }
+
+
+
+  
+  /* “No favorites” message */
+  .no-favs {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-size: 1.2rem;
+    color: #ccc;
+    padding: 2rem;
+  }
+  

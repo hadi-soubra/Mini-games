@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Mahmoud</title>
+    <link rel="stylesheet" href="flappybird.css">
+</head>
+<body>
+    <!-------------------------Navigation bar------------------------------->
+    <div class="navbar">
+        <div class="navbar-left">
+            <a href="../main/HNMgames.html">HNM Games</a>
+        </div>
+        <div class="navbar-right">
+            <a href="../login.html" id="account-icon">👤</a>
+        </div>
+    </div>
+    <!------------------------------------------------------------------------>
+
+    <div class="view">
+        <!-------------------------sidebar and game------------------------------->
+        <div class="game">
+            <!-- Score and Leaderboard -->
+            <div class="sidebar">
+              <div class="score">
+                <h2>Current Score</h2>
+                <p id="score">0</p>
+                <h2>Your High Score</h2>
+                <p id="high-score">0</p>
+              </div>
+
+              <div class="leaderboard">
+                <h2>Leaderboard</h2>
+                <ul id="leaderboard-list">
+                  <!-- Leaderboard entries will be populated by JavaScript -->
+                </ul>
+              </div>
+            </div>
+            <!-------------------------->
+            <!------- Game Canvas ------->
+            <div class="game-contain">
+              <canvas id="board"></canvas>
+              <script src="flappybird.js"></script>
+            </div>
+            <!-------------------------->
+        </div>
+        <!------------------------------------------------------------------------>
+    </div>
+    <!---------------------------Footer--------------------------------------->
+    <div class="footer">
+        <!-- How to Play Section -->
+        <div>
+            <h2>How to Play</h2>
+            <p>Press Space to make the bird jump.</p>
+            <p>Avoid hitting the pipes!</p>
+        </div>
+        <!-------------------------->
+
+        <!-- Add to Favorites Button -->
+        <div>
+            <button id="fav-btn">☆ Add to Favorites</button>
+        </div>
+        <!-------------------------->
+    </div>
+    <!------------------------------------------------------------------------>
+</body>
+</html>
