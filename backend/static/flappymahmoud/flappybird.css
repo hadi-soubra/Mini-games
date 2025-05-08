@@ -12,7 +12,6 @@ body {
 }
 
 .view{
-    max-width: 1700px;
     margin: 5px auto;
 }
 
@@ -42,15 +41,14 @@ body {
   display: flex;
   flex-direction: row;
   background-color: #000000;
+  margin-top: 20px;
 }
 
 .sidebar{
   display: flex;
   flex-direction: column;
   width: 250px;
-  margin-right: 2%;
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-right: 10px;
   padding: 10px;
   background-color: #3a3a3a;
   border-radius: 10px;
@@ -84,7 +82,7 @@ body {
   align-items: center;
   padding: 0.4rem ;
   border-bottom: 2px solid #ffffff;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
 }
 
 /* No border on the last item */
@@ -124,24 +122,11 @@ body {
   padding-bottom: 5px;
 }
 
-/* Leaderboard heading and list styles */
 .leaderboard h2 {
   font-size: 20px;
   margin-bottom: 10px;
   border-bottom: 1px solid #f1b600;
   padding-bottom: 5px;
-}
-
-.leaderboard ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.leaderboard li {
-  margin: 4px;
-  padding: 5px 0;
-  border-bottom: 1px solid #555;
 }
 
 canvas{
@@ -163,47 +148,46 @@ canvas{
   border-radius: 10px;
 }
 
-.footer {
-  align-self: center;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #222;
-  padding: 20px;
-  width: 95%;
-  border: 2px solid #f1b600;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
+                      .footer {
+                        align-self: center;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        background-color: #333;
+                        padding: 20px;
+                        width: 95%;
+                        border: 2px solid #f1b600;
+                        border-radius: 8px;
+                        margin-bottom: 20px;
+                      }
 
-.footer h2 {
-  margin: 0 0 10px;
-}
+                      .footer h2 {
+                        margin: 0 0 10px;
+                      }
 
-.footer p {
-  margin: 5px 0;
-}
+                      .footer p {
+                        margin: 5px 0;
+                      }
 
-.footer button {
-  background-color: #f1b600;
-  color: #222;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-}
+                      .footer button {
+                        background-color: #f1b600;
+                        color: #333;
+                        padding: 10px 20px;
+                        border: none;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        font-weight: bold;
+                        transition: background-color 0.3s ease;
+                      }
 
-.footer button:hover {
-  background-color: #e0a500;
-}
-
+                      .footer button:hover {
+                        background-color: #e0a500;
+                      }
 /* FAVORITES BUTTON STATES */
 .footer button#fav-btn {
   /* match your existing button style */
   background-color: #f1b600;
-  color: #222;
+  color: #333;
 }
 .footer button#fav-btn:hover {
   background-color: #e0a500;
@@ -216,4 +200,61 @@ canvas{
 }
 .footer button#fav-btn.favorited:hover {
   background-color: #b81313;
+}
+
+.snake-options {
+  align-self: center;
+  width: 95%;
+  background-color: #333;
+  padding: 15px;
+  border-radius: 10px;
+  margin: 20px 0;
+  border: 2px solid #f1b600;
+  text-align: center;
+}
+
+.snake-options h2 {
+  color: #ffffff;
+  margin-bottom: 15px;
+}
+
+.head-options {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.head-option {
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 8px;
+  border: 2px solid #444;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 110px;
+}
+
+.head-option img {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 5px;
+}
+
+.head-option span {
+  color: white;
+  font-size: 14px;
+}
+
+.head-option:hover {
+  border-color: #f1b600;
+  background-color: #444;
+}
+
+.head-option.selected {
+  border-color: #f1b600;
+  background-color: #444;
+  box-shadow: 0 0 10px #f1b600;
 }

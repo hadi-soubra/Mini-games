@@ -1,5 +1,3 @@
-// Snake.js
-
 // ─── Configuration ────────────────────────────────────────────────────────────
 const GAME_NAME  = 'Snake';    // must match your back-end game_name
 const blockSize  = 40;
@@ -14,20 +12,103 @@ let velocityX = 0, velocityY = 0;
 let snakeBody = [], foodX, foodY;
 let gameOver = false;
 let score = 0, highscore = 0, sentScore = false;
+let isLoggedIn = false;  // track login status
 
 let scoreEl, highScoreEl, favButton, leaderboardEl;
+
+let headOptions;
 
 // ─── Audio & Image Assets ────────────────────────────────────────────────────
 const moveSound     = new Audio('move.mp3');
 const foodSound     = new Audio('food.mp3');
 const gameoverSound = new Audio('gameover.mp3');
 const snakeHeadImg  = new Image();
-snakeHeadImg.src    = 'snake-head.png';
+snakeHeadImg.src    = 'snake-head1.png';
+const foodImg = new Image();
+foodImg.src = 'apple.png';  // Replace with your image filename
+
+//----head options-------------------
+function initHeadOptions() {
+  headOptions = document.querySelectorAll('.head-option');
+  
+  headOptions.forEach(option => {
+    option.addEventListener('click', () => {
+      // Remove selected class from all options
+      headOptions.forEach(opt => opt.classList.remove('selected'));
+      
+      // Add selected class to clicked option
+      option.classList.add('selected');
+      
+      // Update the snake head image
+      snakeHeadImg.src = option.dataset.image;
+    });
+  });
+}
+
+// ─── Check Authentication Status ─────────────────────────────────────────────
+function checkAuthStatus() {
+  // Initialize DOM references first to avoid undefined issues
+  favButton = document.getElementById('fav-btn');
+
+  return fetch('/check_auth', {
+    credentials: 'same-origin'
+  })
+  .then(r => r.json())
+  .then(data => {
+    isLoggedIn = data.authenticated;
+    
+    if (isLoggedIn) {
+      console.log(`User is authenticated as: ${data.username}`);
+      
+      // Update account icon if element exists
+      const accountIcon = document.getElementById('account-icon');
+      if (accountIcon) {
+        accountIcon.textContent = `👤 ${data.username}`;
+      }
+      
+      // Now that we know the user is logged in, we can load their data
+      return Promise.all([
+        initHighScore(),
+        loadLeaderboard(),
+        initFavoriteButton()
+      ]);
+    } else {
+      console.log('User not logged in');
+      
+      // Initialize UI for non-logged in state
+      highScoreEl.innerText = '0';
+      loadLeaderboard(); // We still load leaderboard for non-logged in users
+      
+      // Handle favorite button for non-logged in users
+      if (favButton) {
+        favButton.disabled = true;
+        favButton.innerText = 'Login to Add Favorites';
+      }
+    }
+  })
+  .catch(err => {
+    console.error('Error checking auth status:', err);
+    // Handle error gracefully
+    highScoreEl.innerText = '0';
+    loadLeaderboard();
+    
+    // Make sure we handle the favorite button even in error cases
+    if (favButton) {
+      favButton.disabled = true;
+      favButton.innerText = 'Login to Add Favorites';
+    }
+  });
+}
 
 // ─── Persistence Helpers ──────────────────────────────────────────────────────
 
 // Submit a new score; backend updates high_scores and returns the updated highscore.
 function submitHighScore(finalScore) {
+  if (!isLoggedIn) {
+    console.log('Not logged in, score not submitted');
+    return Promise.resolve();
+  }
+
   return fetch('/submit_score', {
     method: 'POST',
     credentials: 'same-origin',
@@ -39,6 +120,7 @@ function submitHighScore(finalScore) {
     if (data.status === 'ok') {
       highscore = data.highscore;
       highScoreEl.innerText = highscore;
+      console.log(`High score for ${GAME_NAME} is now ${highscore}`);
       // Refresh the leaderboard whenever a new high score is recorded
       loadLeaderboard();
     } else {
@@ -48,22 +130,40 @@ function submitHighScore(finalScore) {
   .catch(err => console.error('Error saving high score:', err));
 }
 
-// Fetch the logged-in user’s stored highscore for this game
+// Fetch the logged-in user's stored highscore for this game
 function initHighScore() {
-  fetch(`/get_highscore?game=${encodeURIComponent(GAME_NAME)}`, {
+  // Show loading indicator
+  highScoreEl.innerText = 'Loading...';
+  
+  // Don't fetch if not logged in
+  if (!isLoggedIn) {
+    highScoreEl.innerText = '0';
+    return Promise.resolve();
+  }
+
+  return fetch(`/get_highscore?game=${encodeURIComponent(GAME_NAME)}`, {
     credentials: 'same-origin'
   })
     .then(r => r.json())
     .then(data => {
-      highscore = data.highscore;
-      highScoreEl.innerText = highscore;
+      if (data.highscore !== undefined) {
+        highscore = data.highscore;
+        highScoreEl.innerText = highscore;
+        console.log(`Loaded high score: ${highscore}`);
+      } else {
+        highScoreEl.innerText = '0';
+        console.log('No high score found');
+      }
     })
-    .catch(err => console.error('Error fetching high score:', err));
+    .catch(err => {
+      console.error('Error fetching high score:', err);
+      highScoreEl.innerText = '0';
+    });
 }
 
 // Fetch top-10 high scores across all users and render the leaderboard
 function loadLeaderboard() {
-  fetch(`/leaderboard?game=${encodeURIComponent(GAME_NAME)}&top=10`, {
+  return fetch(`/leaderboard?game=${encodeURIComponent(GAME_NAME)}&top=10`, {
     credentials: 'same-origin'
   })
     .then(r => r.json())
@@ -81,7 +181,6 @@ function loadLeaderboard() {
         
         li.append(userSpan, scoreSpan);
         leaderboardEl.appendChild(li);
-        
       });
     })
     .catch(err => console.error('Error loading leaderboard:', err));
@@ -91,8 +190,15 @@ function loadLeaderboard() {
 
 // Initialize the favorites button state and click handler
 function initFavoriteButton() {
-  favButton = document.getElementById('fav-btn');
-  fetch('/my_favorites', { credentials: 'same-origin' })
+  // No need to query for favButton again since we already did in checkAuthStatus
+  
+  // Don't initialize if not logged in
+  if (!isLoggedIn) {
+    // We also don't need this code here since it's handled in checkAuthStatus
+    return Promise.resolve();
+  }
+
+  return fetch('/my_favorites', { credentials: 'same-origin' })
     .then(r => r.json())
     .then(list => {
       const isFav = list.includes(GAME_NAME);
@@ -148,15 +254,25 @@ window.onload = () => {
 
   // Initialize displays
   scoreEl.innerText     = score;
-  highScoreEl.innerText = '…';
+  highScoreEl.innerText = 'Loading...';
 
-  // Load persisted data
-  initHighScore();
-  loadLeaderboard();
-  initFavoriteButton();
-
-  // Place the first food
-  placeFood();
+  // Check auth status first, which will trigger high score and favorites loading if logged in
+  checkAuthStatus()
+    .then(() => {
+      // Initialize head options
+      initHeadOptions();
+      
+      // Initialize snake with 2 body segments
+      initSnake();
+      
+      // Place the first food after auth check completes
+      placeFood();
+      
+      // Start with a slight delay to ensure proper initialization
+      setTimeout(() => {
+        gameInterval = setInterval(update, gameSpeed);
+      }, 500);
+    });
 
   // Prevent arrow keys from scrolling page
   document.addEventListener('keydown', e => {
@@ -167,10 +283,17 @@ window.onload = () => {
 
   // Game controls
   document.addEventListener('keyup', handleKeyPress);
-
-  // Start the game loop
-  gameInterval = setInterval(update, gameSpeed);
 };
+
+// Initialize snake with starting body segments
+function initSnake() {
+  // Clear snake body
+  snakeBody = [];
+  // Add two initial body segments (these will be properly positioned on the first update)
+  // We need to offset them significantly to prevent immediate collision detection
+  snakeBody.push([snakeX - blockSize * 3, snakeY]);
+  snakeBody.push([snakeX - blockSize * 4, snakeY]);
+}
 
 // ─── Game Loop ───────────────────────────────────────────────────────────────
 
@@ -192,6 +315,11 @@ function update() {
   }
 
   // Draw and handle food
+if (foodImg.complete) {
+  // Draw food image if loaded
+  context.drawImage(foodImg, foodX, foodY, blockSize, blockSize);
+} else {
+  // Fallback to circle if image isn't loaded
   context.fillStyle = 'red';
   context.beginPath();
   context.arc(
@@ -201,6 +329,7 @@ function update() {
     0, 2*Math.PI
   );
   context.fill();
+}
 
   if (snakeX === foodX && snakeY === foodY) {
     snakeBody.push([foodX, foodY]);
@@ -232,19 +361,25 @@ function update() {
   }
 
   // Compute next head position
-  const nextX = snakeX + velocityX * blockSize;
-  const nextY = snakeY + velocityY * blockSize;
-  const hitWall = (
-    nextX < 0 ||
-    nextX >= boardWidth ||
-    nextY < 0 ||
-    nextY >= boardHeight
-  );
-
-  if (!hitWall) {
-    snakeX = nextX;
-    snakeY = nextY;
+  let nextX = snakeX + velocityX * blockSize;
+  let nextY = snakeY + velocityY * blockSize;
+  
+  // Handle wraparound (pass through walls)
+  if (nextX < 0) {
+    nextX = boardWidth - blockSize;
+  } else if (nextX >= boardWidth) {
+    nextX = 0;
   }
+  
+  if (nextY < 0) {
+    nextY = boardHeight - blockSize;
+  } else if (nextY >= boardHeight) {
+    nextY = 0;
+  }
+  
+  // Update snake head position
+  snakeX = nextX;
+  snakeY = nextY;
 
   // Draw body segments
   context.fillStyle = '#4287f5';
@@ -271,13 +406,13 @@ function update() {
     context.fill();
   }
 
-  // Check collisions
-  if (
-    hitWall ||
-    snakeBody.some(seg => seg[0] === snakeX && seg[1] === snakeY)
-  ) {
-    gameoverSound.play();
-    gameOverAction();
+  // Check only for body collision (no wall collision anymore)
+  // Only check for collision if the snake is actually moving
+  if (velocityX !== 0 || velocityY !== 0) {
+    if (snakeBody.some(seg => seg[0] === snakeX && seg[1] === snakeY)) {
+      gameoverSound.play();
+      gameOverAction();
+    }
   }
 }
 
@@ -315,10 +450,10 @@ function gameOverAction() {
   gameOver = true;
   clearInterval(gameInterval);
 
-  // Submit only once per run
-  if (!sentScore) {
+  // Submit only once per run and only if logged in
+  if (!sentScore && isLoggedIn) {
     sentScore = true;
-    submitHighScore(highscore);
+    submitHighScore(score);
   }
 
   // Draw "Game Over" text
@@ -347,7 +482,10 @@ function restartGame() {
   velocityY  = 0;
   snakeX     = blockSize * 5;
   snakeY     = blockSize * 5;
-  snakeBody  = [];
+  
+  // Initialize snake with 2 body segments again
+  initSnake();
+  
   scoreEl.innerText     = score;
   highScoreEl.innerText = highscore;
   placeFood();

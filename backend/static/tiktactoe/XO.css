@@ -12,7 +12,6 @@ body {
 }
 
 .view{
-    max-width: 1700px;
     margin: 5px auto;
 }
 
@@ -38,66 +37,6 @@ body {
   font-size: 24px;
   text-decoration: none;
 }
-.game{
-  display: flex;
-  flex-direction: row;
-  background-color: #000000;
-}
-
-.sidebar{
-  display: flex;
-  flex-direction: column;
-  width: 250px;
-  margin-right: 2%;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  padding: 10px;
-  background-color: #3a3a3a;
-  border-radius: 10px;
-}
-
-.score{
-  background-color: #444;
-  padding: 15px;
-  margin-bottom: 15px;
-  border-radius: 8px;
-  border: 1px solid #f1b600;
-}
-.leaderboard {
-  background-color: #444;
-  padding: 25px;
-  border-radius: 8px;
-  border: 1px solid #f1b600;
-}
-
-
-/* Score heading styles */
-.score h2 {
-  font-size: 20px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #f1b600;
-  padding-bottom: 5px;
-}
-
-/* Leaderboard heading and list styles */
-.leaderboard h2 {
-  font-size: 20px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #f1b600;
-  padding-bottom: 5px;
-}
-
-.leaderboard ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.leaderboard li {
-  margin: 4px;
-  padding: 5px 0;
-  border-bottom: 1px solid #555;
-}
 
 canvas{
   border: 2px solid;
@@ -122,7 +61,7 @@ canvas{
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
-                        background-color: #222;
+                        background-color: #333;
                         padding: 20px;
                         width: 95%;
                         border: 2px solid #f1b600;
@@ -140,7 +79,7 @@ canvas{
 
                       .footer button {
                         background-color: #f1b600;
-                        color: #222;
+                        color: #333;
                         padding: 10px 20px;
                         border: none;
                         border-radius: 5px;
@@ -152,12 +91,11 @@ canvas{
                       .footer button:hover {
                         background-color: #e0a500;
                       }
-                      
 /* FAVORITES BUTTON STATES */
 .footer button#fav-btn {
   /* match your existing button style */
   background-color: #f1b600;
-  color: #222;
+  color: #333;
 }
 .footer button#fav-btn:hover {
   background-color: #e0a500;

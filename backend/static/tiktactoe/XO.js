@@ -8,6 +8,7 @@ let currentPlayer = "X"; // Start with player X
 let activeBoard = null; // Which small board is active (null means player can choose any)
 let gameOver = false;
 let winner = null;
+let isLoggedIn = false; // Track login status
 
 // sounds
 var drawSound      = new Audio('draw-sound.mp3');
@@ -64,47 +65,94 @@ const GAME_NAME = 'UltimateTicTacToe';
 // Added favButton variable
 let favButton;
 
-// Added favorites helpers functions
+// ─── Check Authentication Status ─────────────────────────────────────────────
+function checkAuthStatus() {
+    return fetch('/check_auth', {
+      credentials: 'same-origin'
+    })
+    .then(r => r.json())
+    .then(data => {
+      isLoggedIn = data.authenticated;
+      
+      if (isLoggedIn) {
+        console.log(`User is authenticated as: ${data.username}`);
+        
+        // Update account icon if element exists
+        const accountIcon = document.getElementById('account-icon');
+        if (accountIcon) {
+          accountIcon.textContent = `👤 ${data.username}`;
+        }
+        
+        // Now that we know the user is logged in, initialize favorite button
+        return initFavoriteButton();
+      } else {
+        console.log('User not logged in');
+        
+        // Handle favorite button for non-logged in users
+        if (favButton) {
+          favButton.disabled = true;
+          favButton.innerText = 'Login to Add Favorites';
+        }
+        return Promise.resolve();
+      }
+    })
+    .catch(err => {
+      console.error('Error checking auth status:', err);
+      return Promise.resolve();
+    });
+}
+
+// ─── Favorites Helpers ───────────────────────────────────────────────────────
+
 // Initialize the favorites button state and click handler
 function initFavoriteButton() {
-    favButton = document.getElementById('fav-btn');
-    fetch('/my_favorites', { credentials: 'same-origin' })
-        .then(r => r.json())
-        .then(list => {
-            const isFav = list.includes(GAME_NAME);
-            favButton.classList.toggle('favorited', isFav);
-            favButton.innerText = isFav
-                ? '★ Remove from Favorites'
-                : '☆ Add to Favorites';
-            favButton.addEventListener('click', toggleFavorite);
-        })
-        .catch(err => console.error('Error loading favorites:', err));
+  favButton = document.getElementById('fav-btn');
+  
+  // Don't initialize if not logged in
+  if (!isLoggedIn) {
+    favButton.disabled = true;
+    favButton.innerText = 'Login to Add Favorites';
+    return Promise.resolve();
+  }
+
+  return fetch('/my_favorites', { credentials: 'same-origin' })
+    .then(r => r.json())
+    .then(list => {
+      const isFav = list.includes(GAME_NAME);
+      favButton.classList.toggle('favorited', isFav);
+      favButton.innerText = isFav
+        ? '★ Remove from Favorites'
+        : '☆ Add to Favorites';
+      favButton.addEventListener('click', toggleFavorite);
+    })
+    .catch(err => console.error('Error loading favorites:', err));
 }
 
 // Toggle favorite/unfavorite on button click
 function toggleFavorite() {
-    const isFav = favButton.classList.contains('favorited');
-    const url = isFav ? '/unfavorite' : '/favorite';
-    fetch(url, {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `game=${encodeURIComponent(GAME_NAME)}`
-    })
-    .then(r => r.json())
-    .then(data => {
-        if ((isFav && data.status === 'removed') ||
-            (!isFav && data.status === 'added')) {
-            favButton.classList.toggle('favorited');
-            favButton.innerText = favButton.classList.contains('favorited')
-                ? '★ Remove from Favorites'
-                : '☆ Add to Favorites';
-        } else {
-            console.error('Favorite toggle failed:', data);
-        }
-    })
-    .catch(err => console.error('Error toggling favorite:', err));
+  const isFav = favButton.classList.contains('favorited');
+  const url   = isFav ? '/unfavorite' : '/favorite';
+  fetch(url, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `game=${encodeURIComponent(GAME_NAME)}`
+  })
+  .then(r => r.json())
+  .then(data => {
+    if ((isFav && data.status === 'removed') ||
+        (!isFav && data.status === 'added')) {
+      favButton.classList.toggle('favorited');
+      favButton.innerText = favButton.classList.contains('favorited')
+        ? '★ Remove from Favorites'
+        : '☆ Add to Favorites';
+    } else {
+      console.error('Favorite toggle failed:', data);
+    }
+  })
+  .catch(err => console.error('Error toggling favorite:', err));
 }
+
 // Initialize the game when the window loads
 window.onload = function() {
     board = document.getElementById("board");
@@ -117,13 +165,23 @@ window.onload = function() {
     document.body.style.margin = "0";
     document.body.style.padding = "0";
     
-    
-    board.addEventListener("click", handleClick);
-    document.addEventListener("keydown", handleKeyDown);
-    initFavoriteButton();
-
-    drawBoard();
-    updateInfo();
+    // Check authentication status first
+    checkAuthStatus()
+      .then(() => {
+        // Continue with game initialization
+        board.addEventListener("click", handleClick);
+        document.addEventListener("keydown", handleKeyDown);
+        drawBoard();
+        updateInfo();
+      })
+      .catch(err => {
+        console.error("Error during initialization:", err);
+        // Continue anyway to allow playing without authentication
+        board.addEventListener("click", handleClick);
+        document.addEventListener("keydown", handleKeyDown);
+        drawBoard();
+        updateInfo();
+      });
 };
 
 // Handle keyboard events for spacebar reset
