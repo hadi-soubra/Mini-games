@@ -1,0 +1,103 @@
+:root {
+  --bg-color:    #121212;
+  --card-bg:     #1e1e1e;
+  --accent:      #f1c40f;
+  --text-light:  #ffffff;
+  --text-muted:  #cccccc;
+  --font-sans:   'Segoe UI', Tahoma, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  background: var(--bg-color);
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+main {
+  width: 100%;
+  max-width: 400px;
+  padding: 1rem;
+  text-align: center;  /* center the page-title */
+}
+
+/* big title above card */
+.page-title {
+  font-size: 2.5rem;
+  color: var(--accent);
+  margin-bottom: 1.5rem;
+}
+
+.login-card {
+  background: var(--card-bg);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+}
+
+.login-card h2 {
+  margin: 0 0 1.5rem;
+  color: var(--accent);
+  text-align: center;
+}
+
+.login-card form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-card label {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.login-card input {
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: none;
+  border-radius: 4px;
+  background: #2a2a2a;
+  color: var(--text-light);
+  font-size: 1rem;
+}
+
+.login-card input::placeholder {
+  color: #888;
+}
+
+.login-card button {
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--bg-color);
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.login-card button:hover {
+  background: #d4ac0d;
+}
+
+.login-card .signup-link {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.login-card .signup-link a {
+  color: var(--accent);
+  text-decoration: none;
+}
